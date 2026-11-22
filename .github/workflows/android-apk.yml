@@ -1,0 +1,110 @@
+# Telefona yüklenecek deneme APK'sı.
+# main dalına her gönderimde (ya da Actions sekmesinden elle) GitHub'ın sunucusunda çalışır:
+# Godot'yu indirir, oyunu Android'e dışa aktarır, APK'yı "Releases" sayfasına "son-surum" adıyla koyar.
+# Bu APK hata ayıklama (debug) anahtarıyla imzalıdır: telefonda denemek içindir, Google Play'e yüklenmez.
+
+name: Android APK
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: android-apk
+  cancel-in-progress: true
+
+env:
+  GODOT_VERSION: "4.7.2"
+
+jobs:
+  apk:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Java 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
+
+      - name: Godot ve dışa aktarma şablonlarını indir
+        run: |
+          mkdir -p ~/godot && cd ~/godot
+          base="https://github.com/godotengine/godot/releases/download/${GODOT_VERSION}-stable"
+          wget -q "$base/Godot_v${GODOT_VERSION}-stable_linux.x86_64.zip"
+          wget -q "$base/Godot_v${GODOT_VERSION}-stable_export_templates.tpz"
+          unzip -q "Godot_v${GODOT_VERSION}-stable_linux.x86_64.zip"
+          mv "Godot_v${GODOT_VERSION}-stable_linux.x86_64" godot
+          unzip -q "Godot_v${GODOT_VERSION}-stable_export_templates.tpz"
+          mkdir -p ~/.local/share/godot/export_templates/${GODOT_VERSION}.stable
+          mv templates/* ~/.local/share/godot/export_templates/${GODOT_VERSION}.stable/
+
+      # Aynı anahtar her derlemede kullanılsın: yoksa telefondaki eski sürüm silinmeden yenisi yüklenemez.
+      # (GitHub önbelleği 7 gün kullanılmazsa silinir; o zaman yeni anahtar oluşur ve oyunu bir kez silip yüklemek gerekir.)
+      - name: Hata ayıklama anahtarını önbellekten al
+        id: keystore
+        uses: actions/cache@v4
+        with:
+          path: ~/debug.keystore
+          key: kartopu-debug-keystore-v1
+
+      - name: Anahtar yoksa oluştur
+        if: steps.keystore.outputs.cache-hit != 'true'
+        run: |
+          keytool -genkeypair -v -keystore ~/debug.keystore -storepass android -alias androiddebugkey \
+            -keypass android -keyalg RSA -keysize 2048 -validity 10000 -dname "CN=Android Debug,O=Android,C=US"
+
+      - name: Godot düzenleyici ayarları (Android SDK, Java, anahtar)
+        run: |
+          mkdir -p ~/.config/godot
+          for v in 4 4.7; do
+          cat > ~/.config/godot/editor_settings-$v.tres <<EOF
+          [gd_resource type="EditorSettings" format=3]
+
+          [resource]
+          export/android/android_sdk_path = "$ANDROID_SDK_ROOT"
+          export/android/java_sdk_path = "$JAVA_HOME"
+          export/android/debug_keystore = "$HOME/debug.keystore"
+          export/android/debug_keystore_user = "androiddebugkey"
+          export/android/debug_keystore_pass = "android"
+          EOF
+          done
+
+      - name: Sürüm numarasını artır
+        run: sed -i "s/^version\/code=.*/version\/code=${{ github.run_number }}/" export_presets.cfg
+
+      - name: Dosyaları içe aktar
+        run: ~/godot/godot --headless --path . --import || true
+
+      - name: APK oluştur
+        env:
+          GODOT_ANDROID_KEYSTORE_DEBUG_PATH: /home/runner/debug.keystore
+          GODOT_ANDROID_KEYSTORE_DEBUG_USER: androiddebugkey
+          GODOT_ANDROID_KEYSTORE_DEBUG_PASSWORD: android
+        run: |
+          mkdir -p build
+          ~/godot/godot --headless --path . --export-debug "Android" build/kartopu.apk
+          ls -la build
+          test -f build/kartopu.apk
+
+      - name: APK'yı derleme sonucuna ekle
+        uses: actions/upload-artifact@v4
+        with:
+          name: kartopu-apk
+          path: build/kartopu.apk
+
+      - name: APK'yı Releases sayfasına koy
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release delete son-surum --yes --cleanup-tag || true
+          gh release create son-surum build/kartopu.apk \
+            --target "${{ github.sha }}" \
+            --prerelease \
+            --title "Kartopu - deneme sürümü #${{ github.run_number }}" \
+            --notes "Telefonda denemek için hata ayıklama APK'sı. Telefondan bu sayfayı açıp kartopu.apk dosyasına dokun."

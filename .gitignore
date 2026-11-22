@@ -1,0 +1,19 @@
+# Godot'nun kendi ürettiği dosyalar (her açılışta yeniden oluşur)
+.godot/
+/android/
+*.translation
+
+# Dışa aktarılan oyun dosyaları
+/build/
+*.apk
+*.aab
+
+# İmza anahtarları ve şifreler ASLA depoya girmez
+*.keystore
+*.jks
+export_credentials.cfg
+
+# Sistem ve düzenleyici dosyaları
+.vs/
+Thumbs.db
+desktop.ini

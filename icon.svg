@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="128" height="128" viewBox="0 0 128 128">
+  <!-- Geçici simge: kardan adam. Yayından önce gerçek simgeyle değiştirilecek. -->
+  <rect width="128" height="128" rx="24" fill="#7fb8e6"/>
+  <circle cx="64" cy="94" r="28" fill="#ffffff"/>
+  <circle cx="64" cy="56" r="20" fill="#ffffff"/>
+  <rect x="38" y="70" width="52" height="9" rx="4.5" fill="#e63946"/>
+  <circle cx="57" cy="52" r="2.8" fill="#1f1f26"/>
+  <circle cx="71" cy="52" r="2.8" fill="#1f1f26"/>
+  <path d="M64 58 L80 61 L64 63 Z" fill="#ff8c26"/>
+  <rect x="44" y="33" width="40" height="5" rx="2" fill="#1f1f26"/>
+  <rect x="51" y="14" width="26" height="21" rx="2" fill="#1f1f26"/>
+</svg>
