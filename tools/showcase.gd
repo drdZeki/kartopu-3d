@@ -27,24 +27,30 @@ func _init() -> void:
 	root.add_child.call_deferred(wv)
 	wv.ready.connect(func() -> void: wv.build(world))
 
-	var n := Balance.CHARACTERS.size()
-	for i in n:
-		var man := SnowmanView.new()
-		root.add_child.call_deferred(man)
-		var data: Dictionary = Balance.CHARACTERS[i]
-		var x := (i - (n - 1) * 0.5) * 1.35
-		man.ready.connect(func() -> void:
-			man.build(data)
-			man.position = Vector3(x, 0, 0)
-			man.snap_facing(Vector2(0, 1)))
-		_men.append(man)
+	# önde oyuncu karakterleri, arkada Haylazlar
+	var rows: Array = [[Balance.CHARACTERS, "player", 0.0, 1.35], [Balance.HAYLAZ.values(), "haylaz", -2.4, 1.9]]
+	for row: Array in rows:
+		var list: Array = row[0]
+		var n := list.size()
+		for i in n:
+			var man := SnowmanView.new()
+			root.add_child.call_deferred(man)
+			var data: Dictionary = list[i]
+			var style: String = row[1]
+			var x := (i - (n - 1) * 0.5) * float(row[3])
+			var z: float = row[2]
+			man.ready.connect(func() -> void:
+				man.build(data, style)
+				man.position = Vector3(x, 0, z)
+				man.snap_facing(Vector2(0, 1)))
+			_men.append(man)
 
 	_cam = Camera3D.new()
 	_cam.fov = 40.0
 	root.add_child.call_deferred(_cam)
 	_cam.ready.connect(func() -> void:
 		_cam.make_current()
-		_cam.look_at_from_position(Vector3(0, 3.2, 8.0), Vector3(0, 1.0, 0)))
+		_cam.look_at_from_position(Vector3(0, 4.2, 9.5), Vector3(0, 1.0, -1.0)))
 
 
 func _process(delta: float) -> bool:

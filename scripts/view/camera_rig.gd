@@ -34,8 +34,20 @@ func _fit_aspect() -> void:
 	camera.keep_aspect = Camera3D.KEEP_WIDTH if s.x < s.y else Camera3D.KEEP_HEIGHT
 
 
+var _shake: float = 0.0
+
+
 func follow(target: Vector3, dt: float) -> void:
 	position = position.lerp(target + LOOK_OFFSET, 1.0 - exp(-FOLLOW * dt))
+	_shake = maxf(0.0, _shake - dt * 2.5)
+	var s := _shake * _shake * 0.35
+	camera.h_offset = randf_range(-s, s)
+	camera.v_offset = randf_range(-s, s)
+
+
+## Ekranı sars (0–1).
+func shake(amount: float) -> void:
+	_shake = maxf(_shake, amount)
 
 
 func snap(target: Vector3) -> void:

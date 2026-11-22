@@ -40,8 +40,14 @@ const FOREST_DEPTH: float = 10.0      # çitin dışındaki orman şeridinin gen
 const FOREST_SPACING: float = 2.1
 const PICKET_GAP: float = 0.34        # çit tahtaları arası
 
+const SUN_NO_SHADOW_ENERGY: float = 1.15
+
 var _env_built := false
+var _sun: DirectionalLight3D
+var _ground_mat: ShaderMaterial
+var _forest: Array = []               # dış ormanın MultiMesh'leri (ayarlardan seyreltilebilir)
 var _keep_clear: Array = []           # orman ağaçlarının girmeyeceği yerler: [merkez Vector2, yarıçap]
+var _bush_nodes: Dictionary = {}      # Bush -> çalının düğümü (saydamlık, bekleme sayacı)
 
 
 func build(world: World) -> void:
@@ -56,6 +62,7 @@ func build(world: World) -> void:
 	map.name = "Map"
 	add_child(map)
 	_keep_clear.clear()
+	_bush_nodes.clear()
 
 	var rng := RandomNumberGenerator.new()
 	rng.seed = world.seed_value + 7   # süsler de haritayla birlikte aynı kalsın
@@ -70,7 +77,7 @@ func build(world: World) -> void:
 			"rock": _build_rock(map, ob.center(), ob.radius, rng)
 			"wall": _build_wall(map, ob, rng)
 	for b in world.bushes:
-		_build_bush(map, b.pos, b.radius, rng)
+		_bush_nodes[b] = _build_bush(map, b.pos, b.radius, rng)
 	_build_decorations(map, world, rng)
 	Kit.outline = 0.0
 
@@ -92,15 +99,27 @@ func _build_environment() -> void:
 	we.environment = env
 	add_child(we)
 
+	_make_sun(true)
+	# gölge haritası 4096 yerine 2048: telefonda belirgin hızlanma, görünüşte fark az
+	RenderingServer.directional_shadow_atlas_set_size(2048, true)
+
+
+## Güneş. Compatibility görüntü ayarında çalışan bir ışığın gölgesini sonradan kapatınca ışığın
+## tamamı kayboluyor (sahne griye dönüyor); bu yüzden gölge değişince güneş yeniden oluşturulur.
+func _make_sun(shadows: bool) -> void:
+	if _sun:
+		_sun.queue_free()
 	var sun := DirectionalLight3D.new()
 	sun.rotation_degrees = Vector3(-55.0, -35.0, 0.0)
 	sun.light_color = Color(1.0, 0.97, 0.92)
-	sun.light_energy = 0.5
-	sun.shadow_enabled = true
+	# gölgesiz güneş bu görüntü ayarında daha sönük düşüyor: aynı parlaklık için güçlendirilir
+	sun.light_energy = 0.5 if shadows else SUN_NO_SHADOW_ENERGY
+	sun.shadow_enabled = shadows
 	sun.shadow_opacity = 0.6
 	sun.directional_shadow_mode = DirectionalLight3D.SHADOW_ORTHOGONAL
 	sun.directional_shadow_max_distance = 40.0   # dikey ekranda kamera daha ileriyi görüyor
 	add_child(sun)
+	_sun = sun
 
 
 # ---------- Zemin ----------
@@ -115,6 +134,7 @@ func _build_ground(map: Node3D, world: World, rng: RandomNumberGenerator) -> voi
 	m.shader = GROUND_SHADER
 	m.set_shader_parameter("map_mask", GroundMask.new().build(world, rng))
 	m.set_shader_parameter("map_size", world.size)
+	_ground_mat = m
 	var ground := MeshInstance3D.new()
 	ground.mesh = plane
 	ground.material_override = m
@@ -282,9 +302,7 @@ func _build_sled(map: Node3D, p: Vector2, yaw: float) -> void:
 
 ## Çitin dışındaki süs ormanı: yüzlerce ağaç, parça başına tek çizim (MultiMesh).
 func _build_forest(map: Node3D, world: World, rng: RandomNumberGenerator) -> void:
-	var tiers: Array = [[], [], [], []]
-	var snows: Array = [[], [], [], []]
-	var trunks: Array = []
+	var trees: Array = []   # [taban, dönüş, boyut]
 	var inner := world.half + 1.5
 	var outer := world.half + FOREST_DEPTH
 	var x := -outer
@@ -294,21 +312,55 @@ func _build_forest(map: Node3D, world: World, rng: RandomNumberGenerator) -> voi
 			var p := Vector2(x + rng.randf_range(-0.8, 0.8), z + rng.randf_range(-0.8, 0.8))
 			if maxf(absf(p.x), absf(p.y)) > inner and not _is_kept_clear(p):
 				var s := rng.randf_range(0.85, 1.5)
-				var b := Basis(Vector3.UP, rng.randf_range(0.0, TAU)).scaled(Vector3.ONE * s)
-				var base := Vector3(p.x, 0, p.y)
-				trunks.append(Transform3D(b, base + Vector3(0, 0.25 * s, 0)))
-				for k in 4:
-					var y := (0.7 + k * 0.42) * s
-					tiers[k].append(Transform3D(b, base + Vector3(0, y, 0)))
-					snows[k].append(Transform3D(b, base + Vector3(0, y + 0.2 * s, 0)))
+				trees.append([Vector3(p.x, 0, p.y), Basis(Vector3.UP, rng.randf_range(0.0, TAU)).scaled(Vector3.ONE * s), s])
 			z += FOREST_SPACING
 		x += FOREST_SPACING
+	# karışık sıra: ayarlardan orman azaltılınca (ilk N ağaç çizilir) her yerden eşit seyrelsin
+	for i in range(trees.size() - 1, 0, -1):
+		var j := rng.randi_range(0, i)
+		var tmp = trees[i]
+		trees[i] = trees[j]
+		trees[j] = tmp
+	var tiers: Array = [[], [], [], []]
+	var snows: Array = [[], [], [], []]
+	var trunks: Array = []
+	for t: Array in trees:
+		var base: Vector3 = t[0]
+		var b: Basis = t[1]
+		var s: float = t[2]
+		trunks.append(Transform3D(b, base + Vector3(0, 0.25 * s, 0)))
+		for k in 4:
+			var y := (0.7 + k * 0.42) * s
+			tiers[k].append(Transform3D(b, base + Vector3(0, y, 0)))
+			snows[k].append(Transform3D(b, base + Vector3(0, y + 0.2 * s, 0)))
 	var widths := [0.95, 0.78, 0.6, 0.4]
-	Kit.multi(map, Kit.cylinder(0.11, 0.15, 0.5, 6), TRUNK, trunks, false)
+	_forest.clear()
+	_forest.append(Kit.multi(map, Kit.cylinder(0.11, 0.15, 0.5, 6), TRUNK, trunks, false))
 	for k in 4:
 		var w: float = widths[k]
-		Kit.multi(map, Kit.cylinder(0.0, w, 0.72, 8), PINE_FAR if k % 2 == 0 else PINE_1, tiers[k], false)
-		Kit.multi(map, Kit.cylinder(0.0, w * 0.6, 0.34, 8), SNOW, snows[k], false)
+		_forest.append(Kit.multi(map, Kit.cylinder(0.0, w, 0.72, 8), PINE_FAR if k % 2 == 0 else PINE_1, tiers[k], false))
+		_forest.append(Kit.multi(map, Kit.cylinder(0.0, w * 0.6, 0.34, 8), SNOW, snows[k], false))
+
+
+# ---------- Ayarlar (eski telefonlar için) ----------
+
+## Güneş gölgeleri. Kapalıyken zeminde gölge olmaz (telefonda en çok yoran şeylerden).
+func set_shadows(on: bool) -> void:
+	if _sun and _sun.shadow_enabled != on:
+		_make_sun(on)
+
+
+## Dış ormanın ne kadarı çizilir (0–1).
+func set_forest(fraction: float) -> void:
+	for mm: MultiMeshInstance3D in _forest:
+		if is_instance_valid(mm):
+			mm.multimesh.visible_instance_count = int(mm.multimesh.instance_count * clampf(fraction, 0.0, 1.0))
+
+
+## Zemin ayrıntısı: rüzgâr dalgaları, ton farkları ve parıltılar. Kapalıyken zemin daha sade, daha hızlı.
+func set_ground_detail(on: bool) -> void:
+	if _ground_mat:
+		_ground_mat.set_shader_parameter("detail", on)
 
 
 func _is_kept_clear(p: Vector2) -> bool:
@@ -394,10 +446,23 @@ func _build_wall(map: Node3D, ob: Obstacle, rng: RandomNumberGenerator) -> void:
 # ---------- Çalılık ----------
 
 ## Karlı çobanpüskülü çalısı: koyu yeşil topaklar, kırmızı meyveler, tepesinde kar.
-func _build_bush(map: Node3D, c: Vector2, r: float, rng: RandomNumberGenerator) -> void:
+func _build_bush(map: Node3D, c: Vector2, r: float, rng: RandomNumberGenerator) -> Node3D:
 	var t := Node3D.new()
 	t.position = Vector3(c.x, 0, c.y)
 	map.add_child(t)
+	# bekleme sayacı (süre dolunca çalının üstünde geri sayar)
+	var label := Label3D.new()
+	label.name = "Cool"
+	label.billboard = BaseMaterial3D.BILLBOARD_ENABLED
+	label.no_depth_test = true
+	label.pixel_size = 0.007
+	label.font_size = 72
+	label.outline_size = 20
+	label.modulate = Color(0.85, 0.92, 1.0)
+	label.outline_modulate = Color(0.17, 0.25, 0.42)
+	label.position = Vector3(0, 1.9, 0)
+	label.visible = false
+	t.add_child(label)
 	Kit.outline = OUTLINE
 	Kit.part(t, Kit.sphere(1.0, 12, 6), LEAF, Vector3(0, 0.3, 0), Vector3.ZERO, Vector3(r * 0.7, r * 0.62, r * 0.7))
 	var tops: Array = []
@@ -421,7 +486,29 @@ func _build_bush(map: Node3D, c: Vector2, r: float, rng: RandomNumberGenerator) 
 	for i in 3:
 		var p: Vector3 = tops[rng.randi_range(0, tops.size() - 1)]
 		Kit.part(t, Kit.sphere(1.0, 10, 4), SNOW, p, Vector3.ZERO, Vector3(r * 0.22, r * 0.08, r * 0.22), false)
-	Kit.bake(t)
+	Kit.bake(t, [label])
+	return t
+
+
+## Her karede: oyuncunun içinde durduğu çalı yarı saydam olur (oyuncu görünsün);
+## süresi dolmuş çalı soluk görünür, üstünde kalan bekleme saniyesi yazar.
+func update_bushes(bushes: Array, inside) -> void:
+	for b in bushes:
+		var t: Node3D = _bush_nodes.get(b)
+		if t == null:
+			continue
+		var fade := 0.0
+		if b.cool > 0.0:
+			fade = 0.55
+		elif b == inside:
+			fade = 0.5
+		var label: Label3D = t.get_node("Cool")
+		label.visible = b.cool > 0.0
+		if label.visible:
+			label.text = str(ceili(b.cool))
+		if not is_equal_approx(t.get_meta("fade", 0.0), fade):
+			t.set_meta("fade", fade)
+			Kit.set_alpha(t, 1.0 - fade)
 
 
 # ---------- Süsler (hepsi tek şekilde birleştirilir) ----------

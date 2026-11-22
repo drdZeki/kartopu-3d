@@ -7,6 +7,75 @@ CHAR_KOCABUZ,Koca Buz,Big Chill
 CHAR_KESKIN,Keskin,Ace
 CHAR_NINJA,Kar Ninjası,Snow Ninja
 CHAR_SOVALYE,Buz Şövalyesi,Ice Knight
+HAYLAZ_ATICI,Atıcı Haylaz,Thrower Rascal
+HAYLAZ_KOSUCU,Koşucu Haylaz,Runner Rascal
+HAYLAZ_KOCA,Koca Haylaz,Big Rascal
 JOY_FIXED,Sabit joystick,Fixed joystick
 JOY_FREE,Serbest joystick,Floating joystick
-DEV_HINT,1-4: karakter · R: yeni harita · J: joystick · L: dil,1-4: character · R: new map · J: joystick · L: language
+DEV_HINT,1-4: karakter · R: harita · J: joystick · L: dil · Boşluk: at · Esc: ayarlar,1-4: character · R: map · J: joystick · L: language · Space: throw · Esc: settings
+AMMO_EMPTY,Kartopu bitti!,Out of snowballs!
+AMMO_EMPTY_HINT,Kar yığınının üstünden geç,Walk over a snow pile
+HIT_1,Süper!,Super!
+HIT_2,Pof!,Poof!
+HIT_3,Harika!,Awesome!
+HUD_STORM,Fırtına %d,Storm %d
+HUD_LEFT,· %d Haylaz,· %d rascals
+HUD_CALM,· mola,· break
+STORM_TITLE,FIRTINA %d,STORM %d
+STORM_SUB,%d Haylaz geliyor!,%d rascals are coming!
+STORM_END,FIRTINA DİNDİ!,STORM IS OVER!
+STORM_END_HEAL,+1 can!,+1 heart!
+STORM_END_REST,Biraz nefes al,Take a breath
+GO_TITLE,Dondun!,Frozen!
+GO_SUB,Macera bitti,The adventure is over
+GO_STORM,Fırtına: %d,Storm: %d
+GO_KILLS,Dağıtılan Haylaz: %d,Rascals scattered: %d
+GO_AGAIN,Tekrar oyna,Play again
+GO_SCORE,Puan: %d,Score: %d
+HUD_SCORE,Puan %d,Score %d
+HUD_COMBO,KOMBO x%d!,COMBO x%d!
+STORM_BONUS,+%d puan,+%d points
+PW_UCLU,Üçlü Atış!,Triple Shot!
+PW_BUZ,Buz Topu!,Ice Ball!
+PW_KURE,Buz Küresi: +1 can!,Ice Orb: +1 heart!
+PW_KALKAN,Kalkan!,Shield!
+PW_MIKNATIS,Kar Mıknatısı!,Snow Magnet!
+PW_YAGMUR,Kartopu Yağmuru!,Snowball Shower!
+HAYLAZ_KRAL,Kar Kralı,Snow King
+KRAL_TITLE,KAR KRALI GELİYOR!,THE SNOW KING IS COMING!
+KRAL_SUB,Kar Kralı uyandı!,The Snow King woke up!
+KRAL_SUMMON,Haydi Haylazlar!,Go rascals!
+HIDE_ON,Gizlisin %d,Hidden %d
+HIDE_SEEN,Görüldün!,Spotted!
+HIDE_DONE,Saklanma süresi bitti!,Hiding time is up!
+HIDE_START,Gizlendin!,You're hidden!
+SET_TITLE,Ayarlar,Settings
+SET_QUALITY,Görüntü kalitesi,Graphics quality
+SET_QUALITY_HINT,Oyun yavaşsa Orta ya da Düşük'ü seç,If the game is slow choose Medium or Low
+Q_AUTO,Otomatik,Auto
+Q_HIGH,Yüksek,High
+Q_MID,Orta,Medium
+Q_LOW,Düşük,Low
+Q_CUSTOM,Özel ayar (elle değiştirildi),Custom (changed by hand)
+SET_SHADOWS,Gölgeler,Shadows
+SET_OUTLINES,Kenar çizgileri,Outlines
+SET_GROUND,Zemin ayrıntısı,Ground detail
+SET_EFFECTS,Ekran efektleri,Screen effects
+SET_FOOTPRINTS,Kar izleri,Footprints
+SET_FOREST,Orman,Forest
+FOREST_FULL,Sık,Dense
+FOREST_HALF,Seyrek,Sparse
+FOREST_LOW,Az,Few
+SET_SCALE,Çözünürlük,Resolution
+SET_FPS,Kare hızı,Frame rate
+FPS_60,60 (akıcı),60 (smooth)
+FPS_30,30 (pil dostu),30 (battery saver)
+SET_JOY,Joystick,Joystick
+JOY_S,Sabit,Fixed
+JOY_F,Serbest,Floating
+SET_LANG,Dil,Language
+ON,Açık,On
+OFF,Kapalı,Off
+SET_RESUME,Devam et,Continue
+SET_NEW,Yeni oyun,New game
+AUTO_LOWERED,Oyun akıcı olsun diye görüntü kalitesi düşürüldü,Graphics quality lowered so the game runs smoothly

@@ -17,6 +17,7 @@ uniform float sparkle_strength = 0.9;
 // Güneş + ortam ışığı toplamı 1'in üstünde: zemin renkleri bununla çarpılmazsa bembeyaz patlar,
 // gölge çukurları da camgöbeğine döner (sadece mavi kanal taşmadan kalır).
 uniform float light_comp = 0.84;
+uniform bool detail = true;
 
 varying vec3 world_pos;
 
@@ -54,33 +55,36 @@ void vertex() {
 
 void fragment() {
 	vec2 p = world_pos.xz;
-
-	// büyük yumuşak ton farkları
-	float large = fbm(p * 0.07);
-	vec3 col = mix(snow_mid, snow_light, smoothstep(0.3, 0.7, large));
-
-	// rüzgâr dalgaları: kıvrılan ince çizgiler, bazı bölgelerde belirgin
-	float warp = fbm(p * 0.18 + 3.1) * 4.0;
-	float wave = sin(dot(p, vec2(0.85, 0.45)) * 2.6 + warp);
-	float ridge = smoothstep(0.82, 0.98, wave);
-	float region = smoothstep(0.35, 0.65, fbm(p * 0.06 + 11.0));
-	col = mix(col, ripple_color, ridge * region * 0.55);
+	vec3 col = mix(snow_mid, snow_light, 0.6);
+	float sparkle = 0.0;
 
 	// haritaya özel maske (oyun alanının dışında 0)
 	vec2 uv = p / map_size + 0.5;
 	vec3 mask = texture(map_mask, uv).rgb;
+
+	// ayrıntı açıksa: ton farkları, rüzgâr dalgaları, parıltılar (eski telefonlarda kapatılabilir)
+	if (detail) {
+		float large = fbm(p * 0.07);
+		col = mix(snow_mid, snow_light, smoothstep(0.3, 0.7, large));
+		float warp = fbm(p * 0.18 + 3.1) * 4.0;
+		float wave = sin(dot(p, vec2(0.85, 0.45)) * 2.6 + warp);
+		float ridge = smoothstep(0.82, 0.98, wave);
+		float region = smoothstep(0.35, 0.65, fbm(p * 0.06 + 11.0));
+		col = mix(col, ripple_color, ridge * region * 0.55);
+
+		// parıltılar: hücre başına en fazla bir kristal, zamanla yanıp söner
+		vec2 g = p * 5.0;
+		vec2 cell = floor(g);
+		float h = hash(cell);
+		vec2 offset = vec2(hash(cell + 1.7), hash(cell + 9.2)) - 0.5;
+		float d = length(fract(g) - 0.5 - offset * 0.6);
+		float twinkle = pow(max(0.0, sin(TIME * 2.5 + h * 60.0)), 6.0);
+		sparkle = step(0.9, h) * smoothstep(0.09, 0.0, d) * twinkle * (1.0 - mask.r);
+	}
+
 	col = mix(col, path_color, mask.b * 0.55);
 	col = mix(col, snow_light * 1.02, mask.g * 0.6);
 	col = mix(col, snow_shadow, mask.r * 0.85);
-
-	// parıltılar: hücre başına en fazla bir kristal, zamanla yanıp söner
-	vec2 g = p * 5.0;
-	vec2 cell = floor(g);
-	float h = hash(cell);
-	vec2 offset = vec2(hash(cell + 1.7), hash(cell + 9.2)) - 0.5;
-	float d = length(fract(g) - 0.5 - offset * 0.6);
-	float twinkle = pow(max(0.0, sin(TIME * 2.5 + h * 60.0)), 6.0);
-	float sparkle = step(0.9, h) * smoothstep(0.09, 0.0, d) * twinkle * (1.0 - mask.r);
 
 	ALBEDO = col * light_comp;
 	EMISSION = vec3(sparkle * sparkle_strength);

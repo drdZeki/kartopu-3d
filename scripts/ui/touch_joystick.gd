@@ -54,7 +54,9 @@ func _input(event: InputEvent) -> void:
 	if event is InputEventScreenTouch:
 		var touch := event as InputEventScreenTouch
 		if touch.pressed:
-			if _touch_index == -1 and touch.position.x < get_viewport_rect().size.x * 0.5:
+			var vp := get_viewport_rect().size
+			# üst şerit bilgi alanı: oraya dokunmak joystick sayılmaz
+			if _touch_index == -1 and touch.position.x < vp.x * 0.5 and touch.position.y > vp.y * 0.13:
 				_touch_index = touch.index
 				_center = touch.position if mode == "serbest" else _fixed_center()
 				_update(touch.position)

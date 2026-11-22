@@ -3,6 +3,8 @@ extends RefCounted
 
 var pos: Vector2
 var radius: float
+var use: float = 0.0     # bu çalılıkta harcanan gizlenme süresi
+var cool: float = 0.0    # süre dolduysa kalan bekleme (bu sürede saklanılmaz)
 
 
 func _init(p_pos: Vector2, p_radius: float) -> void:

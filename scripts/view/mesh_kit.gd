@@ -6,6 +6,10 @@ const OUTLINE_COLOR := Color(0.16, 0.20, 0.32)  # kontur rengi: koyu lacivert (s
 
 static var _materials: Dictionary = {}
 static var _meshes: Dictionary = {}
+## Konturlu malzemeler: malzeme kimliği -> [malzeme, kontur malzemesi, kalınlık].
+## Ayarlardan kontur kapatılınca hepsinin kontur geçişi kaldırılır (telefon için yarı yarıya az çizim).
+static var _lined: Dictionary = {}
+static var outlines_on: bool = true
 
 
 ## Çizgi film tarzı malzeme: ışık yumuşak iki tonlu (aydınlık / gölge).
@@ -21,9 +25,31 @@ static func mat(color: Color, outline: float = 0.0) -> StandardMaterial3D:
 		if color.a < 1.0:
 			m.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
 		if outline > 0.0:
-			m.next_pass = _outline_mat(outline)
+			register_outline(m, _outline_mat(outline), outline)
 		_materials[key] = m
 	return _materials[key]
+
+
+## m malzemesine kontur geçişi ekler ve ayarlardan açılıp kapanabilsin diye kaydeder.
+static func register_outline(m: Material, pass_mat: Material, width: float) -> void:
+	_lined[m.get_instance_id()] = [m, pass_mat, width]
+	m.next_pass = pass_mat if outlines_on else null
+
+
+## Bu malzemenin kontur kalınlığı (konturu yoksa 0). Kontur o an kapalı olsa da bilinir.
+static func outline_width_of(m: Material) -> float:
+	if m == null:
+		return 0.0
+	var e: Array = _lined.get(m.get_instance_id(), [])
+	return e[2] if not e.is_empty() else 0.0
+
+
+## Bütün konturları aç / kapat.
+static func set_outlines(on: bool) -> void:
+	outlines_on = on
+	for id in _lined:
+		var e: Array = _lined[id]
+		(e[0] as Material).next_pass = e[1] if on else null
 
 
 ## Kontur: şeklin biraz şişirilmiş, içi dışına çevrilmiş koyu kopyası.
@@ -38,6 +64,31 @@ static func _outline_mat(width: float) -> StandardMaterial3D:
 		m.grow_amount = width
 		_materials[key] = m
 	return _materials[key]
+
+
+## Bir malzemenin yarı saydam kopyası (kontursuz). Compatibility görüntü ayarında nesne başına
+## saydamlık (GeometryInstance3D.transparency) çalışmadığı için saydamlık malzemeyle yapılır.
+static func ghost(m: Material, alpha: float) -> Material:
+	var key := "ghost/%d/%.2f" % [m.get_instance_id(), alpha]
+	if not _materials.has(key):
+		var g := (m as StandardMaterial3D).duplicate() as StandardMaterial3D
+		g.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+		g.albedo_color.a = alpha
+		g.next_pass = null
+		_materials[key] = g
+	return _materials[key]
+
+
+## node altındaki bütün şekilleri yarı saydam yapar (alpha < 1) ya da eski hâline döndürür (alpha = 1).
+static func set_alpha(node: Node, alpha: float) -> void:
+	for c in node.get_children():
+		var mi := c as MeshInstance3D
+		if mi != null and mi.material_override is StandardMaterial3D:
+			if not mi.has_meta("solid"):
+				mi.set_meta("solid", mi.material_override)
+			var solid: Material = mi.get_meta("solid")
+			mi.material_override = solid if alpha >= 0.999 else ghost(solid, alpha)
+		set_alpha(c, alpha)
 
 
 ## Kendi kendine parlayan malzeme (fener ışığı, göz parıltısı gibi).
@@ -130,7 +181,7 @@ static func _vc_mat(width: float, shadow_side: bool = true) -> StandardMaterial3
 		m.diffuse_mode = BaseMaterial3D.DIFFUSE_TOON
 		m.specular_mode = BaseMaterial3D.SPECULAR_DISABLED
 		if width > 0.0:
-			m.next_pass = _outline_mat(width)
+			register_outline(m, _outline_mat(width), width)
 		_materials[key] = m
 	return _materials[key]
 
@@ -145,8 +196,7 @@ static func bake(root: Node3D, stop: Array = []) -> void:
 	var width := 0.0
 	for it: Array in lined:
 		var mi: MeshInstance3D = it[0]
-		var pass_mat := (mi.material_override as StandardMaterial3D).next_pass as StandardMaterial3D
-		width = maxf(width, pass_mat.grow_amount)
+		width = maxf(width, outline_width_of(mi.material_override))
 	for group: Array in [lined, plain]:
 		if group.is_empty():
 			continue
@@ -173,8 +223,7 @@ static func _collect(node: Node, xf: Transform3D, stop: Array, lined: Array, pla
 		var cxf: Transform3D = xf * (child as Node3D).transform
 		if child is MeshInstance3D:
 			var mi := child as MeshInstance3D
-			var m := mi.material_override as StandardMaterial3D
-			if m != null and m.next_pass != null:
+			if outline_width_of(mi.material_override) > 0.0:
 				lined.append([mi, cxf])
 			else:
 				plain.append([mi, cxf])

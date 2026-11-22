@@ -112,6 +112,22 @@ func clamp_inside(p: Vector2, r: float) -> Vector2:
 	return Vector2(clampf(p.x, -limit, limit), clampf(p.y, -limit, limit))
 
 
+## from noktasından dir yönünde giden r yarıçaplı bir kartopu, engele ya da çite çarpmadan
+## en fazla ne kadar gider (max_dist'i geçmez). Nişan çizgisi için.
+func cast(from: Vector2, dir: Vector2, r: float, max_dist: float) -> float:
+	var step := 0.1
+	var d := 0.0
+	while d < max_dist:
+		var p := from + dir * (d + step)
+		if absf(p.x) > half or absf(p.y) > half:
+			return d
+		for ob: Obstacle in obstacles:
+			if ob.edge_distance(p) < r:
+				return d
+		d += step
+	return max_dist
+
+
 ## r yarıçaplı daire bu noktada engellere en az `margin` kadar uzak mı?
 func is_free(p: Vector2, r: float, margin: float = 0.0) -> bool:
 	if absf(p.x) > half - r or absf(p.y) > half - r:

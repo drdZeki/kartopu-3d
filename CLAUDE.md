@@ -45,21 +45,31 @@ Eski HTML prototipi `../kartopu-savasi` klasöründe. O klasör bu projeden bağ
 - Kural testleri: `& "C:\Godot\Godot_v4.7.2-stable_win64_console.exe" --headless --path . --script res://tests/test_core.gd`. Sonda "SONUÇ: BAŞARILI" yazmalı.
 - Yeni bir `.gd` ya da metin dosyası eklenince önce `--headless --path . --import` çalıştır (Godot dosyaları tanısın).
 - Görüntüyü kontrol etmek için: `tools/screenshot.gd` oyunu kısa bir an pencerede açar, duruyor / klavyeyle yürüyor / joystick'le yürüyor olmak üzere 3 ekran görüntüsü kaydeder (kullanım dosyanın başında). Görsel her değişiklikten sonra görüntüye bakarak kontrol et.
+- `tools/screenshot.gd` bir senaryo oynatır: duruyor, klavyeyle yürüyor, joystick, nişan çizgisi, seri atış, kartopu bitti (6 görüntü, dosyanın başında listesi var). Yeni bir oyun özelliği eklenince senaryoya da bir görüntü ekle.
+- Kural ile görüntü arasındaki bağ: `GameSim.step()` anlık olayları `events` listesine yazar (tam liste `game_sim.gd`'nin başında). `main.gd` her adımdan sonra `take_events()` ile alıp efektlere dağıtır. Görüntü kurala doğrudan dokunmaz.
 - Karakterlerin ve haritanın yakın planı için `tools/showcase.gd`: tüm karakterleri yan yana dizer, yakın / oyun kamerası / harita kenarı olmak üzere 3 görüntü alır ve çizim ile üçgen sayısını yazar. Görsel bir değişiklikten sonra ikisini de çalıştır, görüntülere bak.
 - Görsel kurallar (`scripts/view/mesh_kit.gd`):
   - Malzemeler çizgi film tarzı (`DIFFUSE_TOON`). Kontur için parçaları eklemeden önce `Kit.outline = kalınlık`, bitince `Kit.outline = 0.0`.
   - Bir nesnenin parçaları eklendikten sonra `Kit.bake(düğüm, [hareket eden alt düğümler])` ile tek şekle birleştir. Birleştirmeden çok sayıda parça bırakma (telefon yavaşlar).
   - Çok tekrar eden şeyler (çit tahtası, orman ağacı) `Kit.multi` ile.
+  - Kardan adamlar (oyuncu ve Haylazlar) `SnowmanView` ile çizilir. Aynı görünüşün birleştirilmiş şekilleri önbellekte tutulur (`_cache`), yeni Haylaz takılmadan belirir. Kardan adamın parçalarını değiştirirsen önbellek anahtarına (tarz, şapka, renk) dikkat et.
+- Testlerde fırtınasız, engelsiz bir oyun için `_bare_sim()`, hazır bir Haylaz için `_add_haylaz()` kullan.
 - Bilinen tuzaklar:
   - Sis (fog) Compatibility ayarında renkleri çok soldurur, kapalı tutuluyor.
   - MultiMesh'te eşit olmayan ölçek (yassı küre gibi) ışığı bozar. Yassı şekilleri tek tek `Kit.part` ile ekle.
+  - Compatibility ayarında nesne başına saydamlık (`GeometryInstance3D.transparency`) çalışmıyor. Yarı saydamlık için `Kit.set_alpha(düğüm, oran)` kullan (malzemenin saydam kopyası). Yeni bir saydam malzeme ilk çizildiğinde derlenir ve oyun ~1 sn takılır: oyun açılışında bir kez çizdir (`main.gd` içindeki `_prewarm`).
+  - Ekran yazılarında emoji kullanma (her telefonda görünmeyebilir); simgeleri kodla çiz.
   - Beyaz zemin kolayca bembeyaz olur. Güneş + ortam ışığı toplamı 1'in üstünde. Kar zemini gölgelendiricisi (`shaders/snow_ground.gdshader`) rengi `light_comp` ile çarpar. Bu sayı büyürse zemin bembeyaz patlar, mavimsi tonlar camgöbeğine döner. Küçülürse zemin griye kaçar. 0,84 iyi.
   - Zemin maskesi (`scripts/view/ground_mask.gd`) her yeni haritada GDScript ile çizilir (256×256). Büyütmeden önce yükleme süresini ölç.
 - Telefon testi son aşamada (SPEC.md §20, adım 9).
 
 ## Git
 
-- Bu klasörün kendi git deposu var. Uzak depo (GitHub) henüz bağlanmadı. Kullanıcı GitHub ayarlarını Visual Studio'dan yapar. `gh` kurulu değil.
+- Uzak depo: https://github.com/drdZeki/kartopu-3d (herkese açık), dal `main`. `gh` kurulu değil. Gönderme, git'in bilgisayardaki kayıtlı bilgisiyle çalışıyor. Kayıtlı şifreyi çekip API'de kullanmak güvenlik kuralına takılır, deneme.
+- Derleme durumu herkese açık API'den okunur: `https://api.github.com/repos/drdZeki/kartopu-3d/actions/runs`.
+- **Telefon APK'sı:** `main`'e her gönderimde `.github/workflows/android-apk.yml` çalışır. Godot 4.7.2 ile debug APK üretir, Releases'ta `son-surum` etiketine `kartopu.apk` olarak koyar (her derleme eskisinin yerini alır, sürüm kodu = derleme numarası). İndirme bağlantısı: https://github.com/drdZeki/kartopu-3d/releases/download/son-surum/kartopu.apk
+  - Debug anahtarı GitHub önbelleğinde (`kartopu-debug-keystore-v1`). 7 gün kullanılmazsa silinir, yeni anahtar oluşur. O zaman kullanıcı oyunu telefondan bir kez silip yeniden yüklemeli.
+  - Godot sürümü değişirse iş akışındaki `GODOT_VERSION` da değişmeli.
 - Commit'i sadece kullanıcı isteyince yap.
 - GitHub'a sadece kullanıcı "gönder" (veya "push et") dediğinde gönder. O zaman ayrıca onay sorma. Kendiliğinden gönderme, göndermeyi teklif edip sorma.
 - **İmza anahtarları (`.keystore`, `.jks`) ve şifreler asla depoya girmez.**

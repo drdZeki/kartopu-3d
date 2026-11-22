@@ -57,7 +57,7 @@ Oyun sevimli ve neşelidir. Kimse ölmez, kimse yaralanmaz. Oyundaki tüm metinl
 - **Eğik üstten bakış.** Kamera oyuncunun arkasında ve yukarısındadır, 55° aşağı bakar, 20 m uzaktadır ve oyuncuyu yumuşakça takip eder. Kamera dönmez: "yukarı" her zaman haritanın kuzeyidir.
 - Oyun **dikey ekranda** oynanır. Görüş açısı ekranın kısa kenarına (genişliğe) göre 36°: oyuncunun hizasında yanlarda yaklaşık **13 m** görünür. Telefon ne kadar uzun olursa olsun genişlik aynı kalır, uzun telefonlarda ileri (kuzey) daha çok görünür.
 - Eğik bakış yüzünden oyuncunun önü (kuzey, ~20 m) arkasından (güney, ~10 m) daha çok görünür.
-- Ekran dışındaki Haylazlar ekran kenarında okla gösterilir.
+- Ekran dışındaki Haylazlar ekran kenarında, Haylazın yönüne bakan kırmızı oklarla gösterilir. Haylaz yakınlaştıkça ok biraz büyür.
 - Çentikli ekranlarda arayüz güvenli alanın içinde kalır.
 
 ## 5. Karakterler
@@ -74,7 +74,8 @@ Oyun sevimli ve neşelidir. Kimse ölmez, kimse yaralanmaz. Oyundaki tüm metinl
 - Eski prototipte ilk karakterin adı "Kartopu" idi. Oyunun adıyla karışmasın diye adı **Pamuk** oldu.
 - İngilizce adlar: Pamuk = Puff, Rüzgar = Breeze, Koca Buz = Big Chill, Keskin = Ace, Kar Ninjası = Snow Ninja, Buz Şövalyesi = Ice Knight.
 - Oyuncunun gövde yarıçapı: 0,5 m × boyut. Kartopu yarıçapı: 0,16 m × boyut.
-- Kartopu menzili: 14 m (her karakterde aynı).
+- Kartopu menzili: 14 m (her karakterde aynı). Kartopu kural olarak yer düzleminde düz gider. Görüntüde elden (1,25 m) çıkıp hafif bir yay çizerek yere iner, altında gölgesi olur. Ekranda kolay görünsün diye kuraldakinden 1,4 kat iri çizilir.
+- Kartopu engele ya da çite çarpınca kar parçacıkları saçılır. Menzilin sonunda yere düşünce yerde 5 sn'de kaybolan bir kar lekesi kalır.
 - Üşüyünce (vurulunca) 1,1 sn dokunulmazlık.
 - Kilitli karakterler menüde kilit ve fiyatla görünür. Dokununca dükkan açılır.
 - Karakterlerin kimliği sabit bir kelimedir (`pamuk`, `ruzgar`…). Kayıtta sıra numarası değil bu kimlik saklanır, sıra değişse de kayıt bozulmaz.
@@ -83,13 +84,23 @@ Oyun sevimli ve neşelidir. Kimse ölmez, kimse yaralanmaz. Oyundaki tüm metinl
 
 | Tür | Dayanıklılık | Yarıçap (m) | Hız (m/sn) | Puan | Davranış |
 |---|---|---|---|---|---|
-| Atıcı Haylaz (kırmızı bere) | 2 | 0,45 | 2,4 | 100 | Oyuncudan 5,25–8,25 m uzakta durur, yan yan kayar. 14 m içindeyse ~1,6–2,6 sn'de bir kartopu atar |
-| Koşucu Haylaz (turuncu bandana) | 1 | 0,38 | 4,45 | 75 | Zikzak çizerek oyuncuya koşar. Değerse oyuncu üşür, Haylaz 1 sn sersemler |
-| Koca Haylaz (koyu kova) | 6 | 0,75 | 1,55 | 250 | Yavaş yaklaşır. 15 m içindeyse 2,6–3,4 sn'de bir 3'lü yelpaze atar (±0,25 radyan, 7 m/sn, iri kartopu) |
-| Kar Kralı (taç) | 30 + fırtına×4 | 1,15 | 1,8 | 1500 | Sırayla: 14'lü halka atış (6,25 m/sn) → oyuncuya 5'li atış (9,5 m/sn, 0,15 radyan aralık) → 2 Koşucu Haylaz çağırır. Saldırı arası 2,2 sn, dayanıklılığı yarının altına inince 1,5 sn. Değerse oyuncu üşür ve geri itilir |
+| Atıcı Haylaz (kırmızı bere) | 2 | 0,45 | 2,4 | 100 | Oyuncudan 3,5–5,5 m uzakta durur (uzaksa yaklaşır, yakınsa geri çekilir), arada yan yan kayar (tam hızın %70'i, saniyede %40 ihtimalle yön değiştirir). 14 m içindeyse kartopu atar (±0,12 radyan sapma). İlk atış belirdikten 1–2,2 sn sonra, sonra ~1,6–2,6 sn'de bir |
+| Koşucu Haylaz (turuncu bandana) | 1 | 0,38 | 4,45 | 75 | Zikzak çizerek oyuncuya koşar. Değerse oyuncu üşür, Haylaz 0,75 m geri seker ve 1 sn sersemler (geri çekilir, %60 hızla) |
+| Koca Haylaz (koyu gri-mavi kova) | 6 | 0,75 | 1,55 | 250 | 5 m'den uzaksa yaklaşır. 15 m içindeyse 3'lü yelpaze atar (±0,25 radyan, 7 m/sn, iri kartopu: 0,275 m). İlk atış 1,5–2,5 sn sonra, sonra 2,6–3,4 sn'de bir |
+| Kar Kralı (taç, mor pelerin) | 30 + fırtına×4 | 1,15 | 1,8 | 1500 | 6,5 m'den uzaksa yaklaşır, 4,5 m'den yakınsa uzaklaşır, arada yan yan kayar (saniyede %25 ihtimalle yön değiştirir). İlk saldırı 2 sn sonra. Sırayla: 14'lü halka atış (6,25 m/sn, kartopu 0,225 m) → oyuncuya 5'li atış (9,5 m/sn, 0,15 radyan aralık, kartopu 0,2 m) → yanına 2 Koşucu Haylaz çağırır (sahada 14'ten az Haylaz varsa, ±1,75 m içinde). Saldırı arası 2,2 sn, dayanıklılığı yarının altına inince 1,5 sn. Değerse oyuncu üşür ve 1 m geri itilir. Dağılınca 2 güçlendirme ve 6'lık kar yığını bırakır. Buz Topu onu 0,6 sn dondurur, vurulunca 0,1 m geri itilir |
 
-- Haylaz kartoplarının menzili 16 m.
+- Atıcı ve koca Haylazın mesafeleri prototipten (5,25–8,25 m ve 7 m) kısaldı: dikey ekranda yanlarda ~±6,5 m görünüyor, yoksa Haylazlar ekran dışında kalıp atış yapıyordu.
+- Haylaz kartoplarının yarıçapı 0,175 m, menzili 16 m. **Açık mavi** çizilir, oyuncunun beyaz kartoplarından ayrılsın.
 - Atıcı Haylazın kartopu hızı: `8 + fırtına × 0,2` m/sn, en fazla 11,5. Atış arası her fırtınada 0,05 sn kısalır, en az 0,9 sn.
+- Oyuncunun kartopu Haylaza `Haylaz yarıçapı × 1,15 + kartopu yarıçapı` mesafede çarpar. Haylaz kartopun gittiği yöne geri itilir: atıcı ve koşucu 0,4 m, koca 0,2 m.
+- Haylaz kartopu oyuncuya `oyuncu yarıçapı × 1,05 + kartopu yarıçapı` mesafede çarpar. Oyuncu dokunulmazken kartopları içinden geçer.
+- Oyuncunun kartopu havada bir Haylaz kartopuna çarparsa ikisi de dağılır (5. adımda +10 puan).
+- Haylazlar birbirinin içine girmez, engellerin etrafından kayarak dolaşır. Oyuncuya yaklaşmaya çalışıp 0,35 sn yaklaşamazsa (engelin arkasında kaldıysa) 0,7 sn yandan dolaşır.
+- **Görünüş:** Oyuncunun kardan adamlarıyla aynı tarz ama yaramaz yüzlü: içe doğru eğik kaşlar, yana kaymış sırıtış. Korkutucu değil. Boyutları yarıçapa göre (atıcı 0,9, koşucu 0,76, koca 1,5 kat).
+  - Belirirken kardan yükselir, yerden kar fışkırır.
+  - Vurulunca geriye yaylanır, ezilir, kollarını kaldırır, gözlerini sıkar.
+  - Dağılınca kar patlaması; kar topakları, şapkası ve havucu havaya uçar, yere sekip küçülerek kaybolur. Üstünde "Süper!", "Pof!", "Harika!" gibi yazılar çıkar, ekran hafifçe sarsılır.
+  - Atış yaparken oyuncu gibi kolunu savurur. Onlar da karda iz bırakır.
 
 Zorluk artışı:
 - Haylaz hızı: fırtına başına +%3, en fazla +%40.
@@ -105,7 +116,20 @@ Zorluk artışı:
 - Aynı anda sahada en fazla `6 + fırtına` Haylaz olur. Fazlası sırayla gelir.
 - Haylazlar oyuncudan en az 10,75 m uzakta ve engellerin dışında belirir.
 - Fırtına dinince: `fırtına × 50` bonus puan ve +1 ❤️ (en fazla başlangıç ❤️ sayısı kadar).
-- Fırtına başında ekranda yazı çıkar: "FIRTINA 3" ve alt yazı olarak Haylaz sayısı. Kar Kralı fırtınasında "KAR KRALI GELİYOR! 👑".
+- Oyun başında ilk fırtınaya kadar 1,3 sn. Haylazlar fırtına başladıktan 0,4 sn sonra gelmeye başlar, sonra `max(0,35, 1,1 − fırtına × 0,05)` sn'de bir.
+- Fırtına başında ekranın ortasında zıplayarak büyüyen yazı çıkar: "FIRTINA 3" ve altında "7 Haylaz geliyor!". Fırtına dinince "FIRTINA DİNDİ!" ve altında "+1 can!" (kalpler doluysa "Biraz nefes al"). Kar Kralı fırtınasında mor renkte "KAR KRALI GELİYOR!" ve altında "Kar Kralı uyandı!", ekran sarsılır. Uzun başlıklar (İngilizcede) ekrana sığacak kadar küçülür.
+- **Kar Kralı sahadayken** ekranın üstünde, kalplerin ve puanın altında: altın taç simgesi, "Kar Kralı" yazısı ve kırmızı can çubuğu. Vurulunca çubuk bir an beyaz parlar, azalan kısım yavaşça erir.
+- Kar Kralı koşucu çağırınca üstünde "Haydi Haylazlar!" yazar. Dağılınca üç büyük kar patlaması olur, ekran güçlü sarsılır.
+- **Görünüş:** Haylaz yüzlü dev kardan adam (2,3 kat): altın, sivri uçlu, kırmızı-mavi-yeşil mücevherli taç; arkasında beyaz kürk etekli mor pelerin; boynunda beyaz kürk yaka ve altın madalyon; sağ elinde ucunda altın yıldız olan asa; mor eldivenler.
+- Sol üstte kalplerin altında "Fırtına 3 · 5 Haylaz" (kalan ve gelecek Haylaz sayısı), molada "Fırtına 3 · mola".
+
+## 7a. Can ve "Dondun!"
+
+- Oyuncu karakterinin ❤️ sayısıyla başlar (SPEC §5). Sol üstte kalpler: dolu kalp kırmızı, kaybedilen kalp açık gri.
+- Üşüyünce (Haylaz kartopu ya da koşucu değince): 1 kalp gider, 1,1 sn dokunulmazlık. Bu sırada kardan adam yanıp söner, ekran kenarı bir an buz tutar, ekran sarsılır, kaybedilen kalp sallanır.
+- Tek kalp kalınca kalp nabız gibi atar, ekran kenarında hafif buz kalır.
+- Fırtına dinince +1 kalp (en fazla başlangıçtaki kadar).
+- Kalpler bitince oyun durur, 1 sn sonra **"Dondun!"** penceresi açılır: "Macera bitti", puan, ulaşılan fırtına, dağıtılan Haylaz sayısı ve turuncu **Tekrar oyna** düğmesi. (Rekor ve para 7. adımda eklenecek.)
 
 ## 8. Kartopu ekonomisi
 
@@ -115,7 +139,10 @@ Zorluk artışı:
 - Yığının üstünden geçince kapasite dolana kadar kartopu alınır. Yığın küçülür, biterse kaybolur.
 - Dağılan Haylaz, güçlendirme düşürmediyse %30 ihtimalle 2'lik küçük yığın bırakır.
 - Kar Kralı dağılınca 6'lık yığın düşer.
-- Kartopu 2 veya daha aza inince en yakın yığını gösteren ok çıkar. 0 olunca ekranda uyarı görünür.
+- Kartopu 2 veya daha aza inince kardan adamın 1,75 m önünde, en yakın yığına doğru zıplayan turuncu bir ok çıkar. Ok her şeyin üstünde çizilir, ağaç ya da çalı arkasında kalmaz. Yığın 2,4 m'den yakınsa ok çıkmaz.
+- Kartopu 0 olunca ekranın üstünde "Kartopu bitti! / Kar yığınının üstünden geç" uyarısı görünür. Kartopu yokken atmaya çalışınca uyarı sallanır.
+- **Görünüş:** Yığın, karlı bir tümseğin üstünde içindeki sayı kadar dizili kartopudur, kaç tane olduğu gözle görülür. Çevresinde yavaşça parlayıp sönen mavi bir halka vardır. Yeni yığın zıplayarak belirir. Toplayınca kar parçacıkları saçılır, kardan adamın üstünde "+3" yazısı çıkar.
+- **Sayaç:** Sağ üstte beyaz, yuvarlak köşeli bir kutuda kartopu simgesi ve "7 / 10". Sayı değişince bir an büyür. 2 ve altında kırmızı olur, nabız gibi atar.
 
 ## 9. Güçlendirmeler
 
@@ -131,12 +158,28 @@ Tek ❤️'i kalan oyuncuya düşen güçlendirme %50 ihtimalle Buz Küresi olur
 | 🧲 Kar Mıknatısı | 12 sn | 7 m içindeki kar yığınları oyuncuya kayar (8,5 m/sn) |
 | 🌨️ Kartopu Yağmuru | 7 sn | Sınırsız kartopu, atış %40 daha seri, süre bitince kartopu dolu |
 
+- Güçlendirme düşürmeyen Haylaz %30 ihtimalle 2'lik küçük kar yığını bırakır (en fazla 7 yığın sınırına sayılmaz).
+- Oyuncu güçlendirmenin 0,5 m yakınına (gövde yarıçapı + 0,5 m) gelince alır. Aynı güçlendirme tekrar alınırsa süresi baştan başlar. Kartopu Yağmuru alınınca kartopu hemen de dolar.
+- Üçlü atışta yan kartoplar ±0,2 radyan açıyla gider, tek kartopu harcanır. Kalkan, oyuncu yarıçapının 1,9 katı içine gelen Haylaz kartoplarını durdurur, koşucu değse de üşütmez. Donmuş Haylaz kıpırdamaz, atış yapmaz, üşütmez.
+- **Görünüş (yerde):** Her güçlendirmenin kendine özgü küçük 3D simgesi havada döner ve süzülür: Üçlü Atış = yelpaze gibi üç kartopu, Buz Topu = buz küpü, Buz Küresi = pembe kalp, Kalkan = altın kenarlı yuvarlak kalkan, Kar Mıknatısı = kırmızı U mıknatıs, Kartopu Yağmuru = kar yağdıran bulut. Altında güçlendirmenin renginde parlayan halka. Zıplayarak belirir.
+- **Görünüş (etkinken):**
+  - Kalkan: kardan adamı saran, nabız gibi atan mavi baloncuk
+  - Kartopu Yağmuru: kafasının üstünde süzülen, kar yağdıran bulut. Sayaç "∞" gösterir
+  - Kar Mıknatısı: ayağının altında dönen kırmızı-beyaz kesik halka
+  - Buz Topu: göğsünün çevresinde dönen buz kristalleri. Kartopları köşeli ve buz mavisi. Donan Haylaz yarı saydam bir buz kalıbının içinde durur
+  - Üçlü Atış: kafasının çevresinde dönen üç altın top
+  - Son 2 sn yanıp söner. Alınınca kardan adamın üstünde güçlendirmenin adı kendi renginde yazar ("Kalkan!", "Buz Küresi: +1 can!").
+- **Ekranda:** Etkin güçlendirmeler sol üstte, fırtına bilgisinin altında: renkli daire içinde basit simge ve çevresinde kalan süre halkası.
+
 ## 10. Puanlama
 
 - Haylaz puanı × kombo çarpanı.
 - Kombo: 2,6 sn içinde art arda dağıtmalar. Çarpan = `min(5, 1 + floor(kombo / 3))`. Oyuncu üşüyünce kombo sıfırlanır.
 - Haylaz kartopunu havada vurmak: +10 puan.
-- Fırtına bonusu: `fırtına × 50`.
+- Fırtına bonusu: `fırtına × 50`. "FIRTINA DİNDİ!" yazısının altında "+100 puan" gibi görünür.
+- **Ekranda:** Sağ üstte, kartopu sayacının altında "Puan 1250". Sayı artarken hızla yükselir, bir an büyür.
+- Kombo çarpanı 2 ve üstündeyken altında "KOMBO x3!" yazısı ve kombonun bitmesine kalan süreyi gösteren çubuk. Renk çarpana göre değişir: x2 sarı, x3 turuncu, x4 kırmızı, x5 mor. Çarpan artınca yazı zıplar ve Haylazın yerinde "Süper!", "Pof!", "Harika!" gibi bir övgü çıkar.
+- Her puanda kazanıldığı yerde yukarı süzülen "+100" (komboda "+300 x3") yazısı.
 
 ## 11. Para ve dükkan
 
@@ -149,7 +192,7 @@ Tek ❤️'i kalan oyuncuya düşen güçlendirme %50 ihtimalle Buz Küresi olur
 ## 12. Saklanma (karlı çalılık)
 
 - Haritada 4 **karlı çalılık** var (yarıçap 1,1 m). Engel değildir, içinden geçilir. Birbirinden en az 9,5 m, haritanın ortasından en az 5,5 m, harita kenarından en az 3,5 m uzakta olur. Kenarları engellere en az 1 m uzaktadır.
-- Çalılığın içinde duran oyuncu **gizlenir**: yarı saydam görünür, köşede "🌿 Gizlisin 7 sn" yazar.
+- Çalılığın içinde duran oyuncu (çalının merkezine 1,1 m'den yakın) **gizlenir**: kardan adam yarı saydam (hayalet gibi) görünür, içinde durduğu çalı da yarı saydam olur ki oyuncu görünsün. Üstünde yeşil "Gizlendin!" yazısı çıkar. Ekranın altında, ortada yeşil kutuda "Gizlisin 7" ve azalan süre çubuğu.
 - Gizliyken **hiçbir Haylaz (Kar Kralı dahil)** oyuncuyu göremez:
   - Hedefli atış yapmazlar.
   - Oyuncuyu kaybederler: çalıdan kendi taraflarına doğru uzaklaşıp çalıdan 12–18,75 m ötede rastgele noktalarda ararlar. Arama noktası oyuncuya en az 10,75 m uzaktadır.
@@ -157,8 +200,9 @@ Tek ❤️'i kalan oyuncuya düşen güçlendirme %50 ihtimalle Buz Küresi olur
   - Oyuncuya değseler bile üşütmezler.
 - Kar Kralı'nın 14'lü halka atışı ve Koşucu çağırması hedefsiz olduğu için devam eder.
 - Gizliyken Haylaz kartopları oyuncuyu vurmaz, içinden etkisiz geçer.
-- Gizliyken kartopu atınca **1,5 sn görünür** olunur ("👀 Görüldün!"). Bu sırada oyuncu tam renkli görünür, başının üstünde 👀 rozeti ve ayağının altında yanıp sönen halka olur.
-- Bir çalılıkta en fazla **10 sn** gizlenilir. Süre dolunca o çalı **10 sn** kullanılamaz (soluk görünür, üstünde ⏳ geri sayım). Çalıdan çıkınca harcanan süre yarı hızda geri dolar.
+- Gizliyken kartopu atınca **1,5 sn görünür** olunur. Bu sırada oyuncu tam renkli görünür, başının üstünde kırmızı baloncuk içinde iki göz rozeti, ayağının altında yanıp sönen kırmızı halka, ekranda kırmızı yanıp sönen "Görüldün!" kutusu olur.
+- Bir çalılıkta en fazla **10 sn** gizlenilir. Süre dolunca "Saklanma süresi bitti!" yazar, kar fışkırır ve o çalı **10 sn** kullanılamaz: soluk (yarı saydam) görünür, üstünde kalan saniye yazar. Çalıdan çıkınca harcanan süre yarı hızda geri dolar.
+- Haylazlar gizli oyuncuyu ararken gittikleri yöne bakarlar. Engele takılırlarsa yandan dolaşırlar.
 
 ## 13. Kontroller
 
@@ -169,13 +213,18 @@ Tek ❤️'i kalan oyuncuya düşen güçlendirme %50 ihtimalle Buz Küresi olur
   - Yarıçap ekranın kısa kenarının (dikey ekranda genişliğin) %15'i. Sabit modda merkez sol alt köşeden 1,7 yarıçap içeride.
   - Merkezde %15 ölü bölge. Joystick yarıya kadar itilince kardan adam yarı hızla yürür.
   - Mod ana menüden ve duraklatma ekranından değiştirilir.
-- Sağ yarı: dokun = en yakın Haylaza otomatik nişan (hareketini hesaba katarak). 22 noktadan fazla sürükleyip bırak = o yöne atış.
+- Sağ yarı (atış):
+  - **Kısa dokunuş:** 11 m içindeki en yakın Haylaza otomatik nişanlı tek atış (hareketini hesaba katarak). Kardan çıkmakta olan Haylaza nişan alınmaz. Haylaz yoksa kardan adamın baktığı yöne. (Prototipte 16 m idi; dikey ekranda görünmeyen Haylazlara kartopu harcanmasın diye kısaldı.)
+  - **Sürükle ve bırak:** Kısa kenarın %5'inden uzun sürükleme yönlü atıştır. Ekranın yukarısı kuzeydir. Sürüklerken yerde turuncu noktalı **nişan çizgisi** kartopunun gideceği yolu gösterir. Kartopu bir engele ya da çite çarpacaksa çizgi orada biter, ucunda turuncu halka belirir. Parmağın altında da küçük bir halka ve çubuk çıkar.
+  - **Basılı tutma (0,25 sn):** Otomatik nişanlı **seri atış**. Karakterin atış arası süresiyle art arda atar, parmak kalkınca durur.
+  - Bekleme süresi dolmadan yapılan atış isteği 0,3 sn bekletilir, kaybolmaz.
+  - Atıştan sonra kardan adam 0,35 sn atış yönüne bakar (yürüse bile), sağ koluyla atma hareketi yapar.
 - Android geri tuşu: oyundayken duraklatır, menüdeyken bir önceki ekrana döner.
 - Uygulama arka plana geçince oyun kendiliğinden duraklar.
 
 **Bilgisayar (test için)**
-- WASD / ok tuşları: yürü. Fare tıkla veya basılı tut: imlece at. Boşluk: otomatik nişanlı atış. Esc / P: duraklat.
-- Fare dokunmatik ekranı taklit edebilir. Böylece telefon kontrolleri de bilgisayarda denenir.
+- WASD / ok tuşları: yürü. Boşluk: otomatik nişanlı atış (basılı tutunca seri). Esc / P: duraklat.
+- Fare dokunmatik ekran gibi çalışır (sağ yarıda tıklama, sürükleme, basılı tutma). Böylece telefon kontrolleri de bilgisayarda denenir.
 - Geliştirme tuşları (yayında kaldırılacak): 1–4 karakter değiştir, R yeni harita, J joystick modu, L dil.
 
 ## 14. Harita
@@ -268,10 +317,10 @@ Her adımın sonunda bilgisayarda denenebilir bir şey olur.
 
 1. **Kurulum:** Godot projesi, ayarlar, iki dil altyapısı. ✅
 2. **Yürüme:** Harita, kamera, kardan adam, joystick ve klavye. ✅
-3. **Atış:** Kartopu atma, kar yığınları, kartopu ekonomisi, engeller.
-4. **Haylazlar:** Atıcı, Koşucu, Koca Haylaz ve fırtınalar.
-5. **Oyun sistemleri:** ❤️, puan, kombo, güçlendirmeler, ekran bilgileri.
-6. **Ek mekanikler:** Kar Kralı, karlı çalılıkta saklanma.
+3. **Atış:** Kartopu atma, kar yığınları, kartopu ekonomisi, engeller. ✅
+4. **Haylazlar:** Atıcı, Koşucu, Koca Haylaz, fırtınalar, can sistemi ve "Dondun!" ekranı. ✅
+5. **Oyun sistemleri:** ❤️, puan, kombo, güçlendirmeler, ekran bilgileri. ✅ (❤️ 4. adımda geldi)
+6. **Ek mekanikler:** Kar Kralı, karlı çalılıkta saklanma. ✅
 7. **Menüler:** Ana menü, karakter seçimi, dükkan, ayarlar, kayıt, "Dondun!" ekranı.
 8. **Efektler ve ses:** Görsel efektler, sesler, müzik, titreşim.
 9. **Telefon:** Android araçları, telefonda deneme, simge, açılış ekranı.
@@ -304,11 +353,27 @@ Her adımın sonunda bilgisayarda denenebilir bir şey olur.
 | 2026-11-21 | Kamera uzaklığı 13 m → 16,5 m (görünen alan ~14,5 m → ~18 m) | Kullanıcı kamerayı çok yakın buldu |
 | 2026-11-21 | Ekran yatay yerine **dikey**. Kamera 20 m uzakta, 55° eğik, görüş açısı genişliğe göre (yanlarda ~13 m) | Kullanıcı kararı |
 | 2026-11-21 | Kar yağışı kaldırıldı | Kullanıcı telefonu yormasından çekindi |
+| 2026-11-22 | Atış: dokun = otomatik nişan, sürükle = yönlü atış (nişan çizgisiyle), **basılı tut = seri atış** | Çocuklar için kolay; seri atış eski fikir listesindeki "otomatik atış" isteğini karşılıyor |
+| 2026-11-22 | Kartopu sayacı sağ üstte | Kullanıcı seçimi; alt kısım başparmakla kapanıyor |
+| 2026-11-22 | Haylazlar gelene kadar haritada 4 geçici **deneme hedefi** (tahta). 4. adımda kaldırıldı | Kullanıcı seçimi |
+| 2026-11-22 | Can sistemi (kalpler, üşüme, dokunulmazlık, "Dondun!") 5. adım yerine 4. adımda | Kullanıcı seçimi; Haylazlar atış yapınca bir karşılığı olsun |
+| 2026-11-22 | Atıcı 3,5–5,5 m (prototipte 5,25–8,25), koca 5 m'de durur (prototipte 7). Otomatik nişan 11 m (prototipte 16) | Dikey ekranda yanlarda ~±6,5 m görünüyor; Haylazlar ekran dışında kalıyor, oyuncu da görünmeyenlere kartopu harcıyordu |
+| 2026-11-22 | Koca Haylazın kovası koyu gri-mavi | Koca Buz karakterinin mor kovasıyla karışıyordu |
+| 2026-11-22 | Haylaz kartopları açık mavi | Oyuncunun kartoplarından ayırt edilsin |
+| 2026-11-22 | Haylaz dağılınca puan yazısı ("+100"); "Süper!" gibi övgüler sadece kombo artınca | Her dağıtmada övgü çıkınca anlamı kalmıyor, ekran kalabalıklaşıyordu |
+| 2026-11-22 | Güçlendirmelerin her biri görünür bir etkiyle (baloncuk, bulut, halka, kristaller, buz kalıbı) | Çocuk hangi gücün etkin olduğunu ekrana bakmadan anlasın |
+| 2026-11-22 | Buz Küresi yerde pembe kalp olarak görünür | Çocuklar "can" olduğunu hemen anlasın; adı aynı kaldı |
+| 2026-11-23 | Kar Kralı 4,5–6,5 m'de durur (prototipte 5,75–8,5) | Dikey ekranda görünür kalsın (atıcıdaki gibi) |
+| 2026-11-23 | Kar Kralı için ekranın üstünde can çubuğu; koşucu çağırınca "Haydi Haylazlar!" | Kullanıcının "yeniliklere açığım" isteği; çocuk kralı ne kadar yorduğunu görsün |
+| 2026-11-23 | Saklanınca içinde durulan çalı da yarı saydam olur | 3D'de çalı oyuncuyu kapatıyordu; prototipteki "oyuncu çalının önünde çizilir" kuralının 3D karşılığı |
+| 2026-11-23 | "👀" ve "⏳" yerine çizilmiş gözlü rozet ve sayı | Emoji her telefonda aynı görünmeyebilir |
+| 2026-11-22 | Kartopu azalınca yığını gösteren ok ekran kenarında değil kardan adamın önünde, yerde | Küçük çocuklar için daha anlaşılır |
 | 2026-11-21 | Kar tepecikleri ve engel altındaki beyaz kar halkaları kaldırıldı | Zemine yapıştırılmış etiket gibi görünüyorlardı; gölge çukurları nesneleri zaten yere oturtuyor |
 
 ## 22. Yapılacaklar / açık sorular
 
 - [ ] Telefonda ilk deneme: yürüme ve atış hazır olunca bir kez telefonda denemek önerildi (kontrol hissi bilgisayarda tam anlaşılmaz).
+- [ ] Performans: her Haylaz ~13 çizim yapıyor. Sahada 16 Haylaz olunca ~400 çizim olur. Telefonda denenince gerekirse gözler ve küçük parçalar kafa ile birleştirilecek.
 - [ ] Müzik tarzı seçilecek.
 - [ ] Gizlilik politikası sayfası (GitHub Pages) hazırlanacak.
 - [ ] Google Play geliştirici hesabı açılacak (bir kerelik 25 $). Yeni kişisel hesaplarda herkese açık yayından önce kapalı test şartı var (bildiğimiz kadarıyla 12 kişi, 14 gün). Hesap açılınca güncel kural kontrol edilecek.

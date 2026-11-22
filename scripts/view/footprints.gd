@@ -3,7 +3,7 @@ extends MultiMeshInstance3D
 ## iz birkaç saniyede yavaşça kaybolur. Tüm izler tek çizimle çizilir.
 ## İleride Haylazlar da iz bırakabilsin diye her kardan adam için ayrı çağrılabilir.
 
-const MAX_PRINTS: int = 90
+const MAX_PRINTS: int = 220      # oyuncu + Haylazlar
 const STEP: float = 0.55          # iki iz arası (m, boyut 1,0 için)
 const LIFE: float = 7.0           # izin kaybolma süresi (sn)
 const COLOR := Color(0.58, 0.68, 0.88)
@@ -43,8 +43,18 @@ func _ready() -> void:
 		mm.set_instance_color(i, Color(COLOR, 0.0))
 
 
+## Ayarlardan kapatılabilir (eski telefonlar).
+func set_enabled(on: bool) -> void:
+	if not on:
+		clear()
+	visible = on
+	set_process(on)
+
+
 ## Her karede çağrılır. id: kardan adamın kimliği, size: boyutu.
 func track(id: int, pos: Vector2, facing: Vector2, size: float, moving: bool) -> void:
+	if not visible:
+		return
 	var last: Vector2 = _last.get(id, pos)
 	_last[id] = pos
 	if not moving:
